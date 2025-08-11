@@ -1,5 +1,7 @@
 const User = require("../model/user.model")
 const bcrypt = require("bcryptjs")
+const jwt = require("jsonwebtoken")
+
 
 exports.signUp = async(req, res)=>{
     try{
@@ -34,6 +36,19 @@ exports.login = async(req, res)=>{
         if(!email || !password){
             return res.status(400).json({message:"Please give all field"})
         }
+        const userEmail = await User.findOne({email});
+        if(!userEmail){
+            return res.status(400).json({message:"Please enter auth email"})
+        }
+        const passCheck = await bcrypt.compare(password, userEmail.password);
+        if(!passCheck){
+            return res.status(400).json({message:"Please provide me valid pass"})
+        }
+        const JWT_SECRET = "7834RJKFBL.SDJFHV673R34KJBGWER78FTWE"
+        const token = jwt.sign({userEmail}, {JWT_SECRET}, {expiresIn:"7d"})
+
+        return res.status(400).json(token, userEmail)
+
     }catch(err){
         console.log(err)
     }
